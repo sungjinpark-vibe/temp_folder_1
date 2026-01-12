@@ -1,0 +1,38 @@
+name: Daily Stock Model Train
+
+on:
+  schedule:
+    # 한국 시간 22시 (UTC 13시)
+    - cron: '0 13 * * *'
+  workflow_dispatch: # 직접 실행 버튼 활성화
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Run training script
+        run: python train_model.py
+
+      - name: Commit and Push Model
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add kospi_model.tflite
+          # 파일 변경이 있을 때만 커밋 (변경 없으면 에러 방지)
+          git commit -m "Update Daily TFLite Model [skip ci]" || echo "No changes to commit"
+          git push

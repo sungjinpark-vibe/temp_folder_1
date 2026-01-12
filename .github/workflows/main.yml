@@ -12,32 +12,32 @@ jobs:
       contents: write
 
     steps:
-      # [중요] 1. 저장소의 코드를 가상 컴퓨터로 복사해옵니다. 
-      # 이 단계가 없거나 버전이 틀리면 파일을 찾지 못합니다.
+      # 1. 코드를 가져올 때 'fetch-depth: 0'을 추가하여 전체 이력을 가져오도록 보강합니다.
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      # 2. 실제로 파일이 복사되었는지 로그에 출력 (디버깅용)
-      - name: List files for debug
-        run: |
-          echo "현재 폴더 위치: $(pwd)"
-          ls -R
-
-      # 3. 파이썬 설치
+      # 2. 파이썬 설치
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
-      # 4. 패키지 설치 (파일 위치를 명시적으로 지정)
+      # 3. 파일 목록 강제 확인 (에러 시 원인 파악용)
+      - name: Check Directory Structure
+        run: |
+          pwd
+          ls -la
+
+      # 4. 패키지 설치 (파일명 직접 입력 대신 패턴으로 찾아서 설치)
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install -r ./requirements.txt
+          pip install yfinance pandas numpy scikit-learn tensorflow lxml
 
       # 5. 학습 스크립트 실행
       - name: Run training script
-        run: python ./train_model.py
+        run: python train_model.py
 
       # 6. 결과물 저장
       - name: Commit and Push Model
